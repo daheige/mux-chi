@@ -1,0 +1,6 @@
+logs/*
+*.log
+mux-chi.exe
+mux-chi
+mytest/*
+vendor/*
