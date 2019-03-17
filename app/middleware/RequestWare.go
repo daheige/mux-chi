@@ -65,8 +65,8 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 }
 
 //404处理函数
-func (this *RequestWare) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("404 - not found"))
+	w.Write([]byte("404 - page not found"))
 }

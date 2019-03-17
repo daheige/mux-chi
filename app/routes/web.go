@@ -28,6 +28,17 @@ func RouterHandler(router *chi.Mux) {
 	//路由参数
 	router.Get("/info/{userID}",indexCtrl.Info)
 
+	//路由前缀 /road开始
+	router.Route("/road", func(r chi.Router) {
+		router.Get("/left", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("left road"))
+		})
+
+		router.Post("/right", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("right road"))
+		})
+	})
+
 	//模拟panic操作
 	//http://localhost:1338/mock-panic
 	router.HandleFunc("/mock-panic", indexCtrl.MockPanic)

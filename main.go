@@ -62,10 +62,10 @@ func main() {
 	router := chi.NewRouter()
 
 	// A good base middleware stack
-	router.Use(chiWare.RequestID)
-	router.Use(chiWare.RealIP)
+	//router.Use(chiWare.RequestID)
+	//router.Use(chiWare.RealIP)
 	router.Use(chiWare.Logger)
-	router.Use(chiWare.Recoverer)
+	//router.Use(chiWare.Recoverer)
 
 	//请求中间件，记录日志和异常捕获处理
 	reqWare := &middleware.RequestWare{}
@@ -79,6 +79,20 @@ func main() {
 
 	//加载路由
 	routes.RouterHandler(router)
+
+	//路由找不到404处理
+	router.NotFound(middleware.NotFoundHandler)
+
+	//路由walk,打印所有的路由信息，开发环境可以打开，生产环境可以注释掉
+	//walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	//	route = strings.Replace(route, "/*/", "/", -1)
+	//	fmt.Printf("%s %s\n", method, route)
+	//	return nil
+	//}
+	//
+	//if err := chi.Walk(router, walkFunc); err != nil {
+	//	fmt.Printf("Logging err: %s\n", err.Error())
+	//}
 
 	server := &http.Server{
 		Handler:      router,
