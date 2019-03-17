@@ -17,7 +17,7 @@ func RouterHandler(router *chi.Mux) {
 	homeCtrl := &controller.HomeController{}
 	router.HandleFunc("/test", homeCtrl.Test)
 	router.HandleFunc("/post", homeCtrl.Post)
-	router.Post("/home/post",homeCtrl.Post) //post路由
+	router.Post("/home/post", homeCtrl.Post) //post路由
 
 	indexCtrl := &controller.IndexController{}
 	router.HandleFunc("/home", indexCtrl.Home)
@@ -26,12 +26,13 @@ func RouterHandler(router *chi.Mux) {
 	router.HandleFunc("/info", indexCtrl.Info)
 
 	//路由参数
-	router.Get("/info/{userID}",indexCtrl.Info)
+	router.Get("/info/{userID}", indexCtrl.Info)
 
-	//路由前缀 /road开始
-	router.Route("/road", func(r chi.Router) {
+	//路由前缀 /road开始，子路由设置
+	router.Route("/road", func(router chi.Router) { //chi.Router作为参数
 		router.Get("/left", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("left road"))
+			return
 		})
 
 		router.Post("/right", func(w http.ResponseWriter, r *http.Request) {
