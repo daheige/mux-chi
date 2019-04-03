@@ -17,8 +17,9 @@ const logtmFmtWithMS = "2006-01-02 15:04:05.999"
 type LogInfo struct {
 	Tag        string      `json:"tag"` //uri路径
 	Message    interface{} `json:"message"`
-	RequestUri string      `json:"request_uri"` //请求的uri
-	LogId      string      `json:"log_id"`      //上下文请求的日志id
+	RequestUri string      `json:"request_uri"`  //请求的uri
+	LogId      string      `json:"log_id"`       //上下文请求的日志id
+	RequestId  string      `json:"x-request-id"` //请求x-request-id
 	LocalTime  string      `json:"local_time"`
 	Context    interface{} `json:"context"` //当前请求上下文
 	Host       string      `json:"host"`
@@ -32,9 +33,17 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 		if err := recover(); err != nil {
 			//请求上下文中的log_id
 			reqLogId := req.Context().Value("log_id")
+			reqId := req.Context().Value("request_id")
+
+			//判断是否为空
 			logId := ""
+			requestId := ""
+			if reqId != nil {
+				requestId = reqId.(string)
+			}
+
 			if reqLogId == nil {
-				logId = common.StrJoin("_", "log", common.RndUuidMd5())
+				logId = common.RndUuidMd5()
 			} else {
 				logId = reqLogId.(string)
 			}
@@ -47,6 +56,7 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 				Message:    "write log error",
 				RequestUri: req.RequestURI,
 				LogId:      logId,
+				RequestId:  requestId,
 				LocalTime:  time.Now().Format(logtmFmtWithMS),
 				Context: map[string]interface{}{
 					"trace_error": string(bytes),
@@ -66,7 +76,8 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 	ua := req.Header.Get("User-Agent")
 
 	//日志信息
-	log_id := req.Context().Value("log_id")
+	logId := req.Context().Value("log_id")
+	requestId := req.Context().Value("request_id")
 
 	// log.Println("log_id: ", log_id)
 
@@ -78,7 +89,8 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 		Tag:        tag,
 		Message:    message,
 		RequestUri: req.RequestURI,
-		LogId:      log_id.(string),
+		LogId:      logId.(string),
+		RequestId:  requestId.(string),
 		LocalTime:  time.Now().Format(logtmFmtWithMS),
 		Context:    context,
 		Host:       req.RemoteAddr,
@@ -104,6 +116,8 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 		common.WarnLog(string(json_data))
 	case "error":
 		common.ErrorLog(string(json_data))
+	default:
+		common.InfoLog(string(json_data))
 	}
 }
 
