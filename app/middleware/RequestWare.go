@@ -41,6 +41,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 			"App": "hg-mux",
 		})
 
+		//测试mysql短连接
 		dbConf := mysql.DbConf{
 			Ip:        "127.0.0.1",
 			Port:      3306,
