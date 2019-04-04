@@ -43,4 +43,6 @@ func RouterHandler(router *chi.Mux) {
 	//模拟panic操作
 	//http://localhost:1338/mock-panic
 	router.HandleFunc("/mock-panic", indexCtrl.MockPanic)
+
+	router.Get("/api/user",indexCtrl.User)
 }

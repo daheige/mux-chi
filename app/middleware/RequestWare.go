@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/daheige/thinkgo/mysql"
 	"log"
 	"mux-chi/app/extensions/Logger"
 	"net/http"
@@ -39,6 +40,29 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		Logger.Info(r, "exec begin", map[string]interface{}{
 			"App": "hg-mux",
 		})
+
+		dbConf := mysql.DbConf{
+			Ip:        "127.0.0.1",
+			Port:      3306,
+			User:      "root",
+			Password:  "1234",
+			Database:  "test",
+			ParseTime: true,
+			SqlCmd:    true,
+		}
+
+		err := dbConf.ShortConnect()
+		if err != nil{
+			log.Println("db connection error: ",err.Error())
+		}else{
+			r = utils.ContextSet(r, "db", dbConf.Db())
+
+			//用完短连接建议关闭，因为资源不释放的话，当大量的请求过来的时候，mysql连接过多，就会报错
+			//查看db连接信息：show full processlist;或show processlist;
+			//就可以看到当前数据库连接信息状态
+			defer dbConf.Db().Close()
+		}
+
 
 		h.ServeHTTP(w, r)
 

@@ -2,7 +2,9 @@ package controller
 
 import (
 	"github.com/go-chi/chi"
+	"github.com/jinzhu/gorm"
 	"log"
+	"mux-chi/app/model"
 	"net/http"
 
 	"mux-chi/app/config"
@@ -44,4 +46,26 @@ func (this *IndexController) Info(w http.ResponseWriter, r *http.Request) {
 //模拟发生panic操作
 func (this *IndexController) MockPanic(w http.ResponseWriter, r *http.Request) {
 	panic(111)
+}
+
+func (this *IndexController) User(w http.ResponseWriter,r *http.Request){
+	dbObj := r.Context().Value("db")
+	db := dbObj.(*gorm.DB)
+
+	log.Println(dbObj)
+
+	user := &model.User{}
+	err := db.Where("name = ?","hello").First(user).Error
+	if err != nil{
+		log.Println("get data error: ",err.Error())
+		w.Write([]byte("db connection error"))
+		return
+	}
+
+	//defer db.Close() //当db在中间件退出的时候已经关闭了，也不会影响服务运行
+
+	log.Println("user: ",user)
+	log.Println(user.Id)
+
+	w.Write([]byte("ok"))
 }
