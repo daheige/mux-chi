@@ -1,11 +1,13 @@
 package middleware
 
 import (
-	"github.com/daheige/thinkgo/mysql"
 	"log"
 	"mux-chi/app/extensions/Logger"
 	"net/http"
 	"time"
+
+	"github.com/daheige/thinkgo/dao"
+	"github.com/daheige/thinkgo/mysql"
 
 	"mux-chi/app/utils"
 
@@ -53,9 +55,9 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		}
 
 		err := dbConf.ShortConnect()
-		if err != nil{
-			log.Println("db connection error: ",err.Error())
-		}else{
+		if err != nil {
+			log.Println("db connection error: ", err.Error())
+		} else {
 			r = utils.ContextSet(r, "db", dbConf.Db())
 
 			//用完短连接建议关闭，因为资源不释放的话，当大量的请求过来的时候，mysql连接过多，就会报错
@@ -64,6 +66,30 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 			defer dbConf.Db().Close()
 		}
 
+		dbConf2 := &dao.DbConf{
+			Ip:        "127.0.0.1",
+			Port:      3306,
+			User:      "root",
+			Password:  "1234",
+			Database:  "test",
+			ParseTime: true,
+			SqlCmd:    true,
+		}
+
+		err = dbConf2.SetEngine()
+		if err != nil {
+			log.Println("err2: ", err)
+		} else {
+			db2, err := dbConf2.Db()
+			if err != nil {
+				log.Println("get db engine error: ", err)
+			} else {
+				r = utils.ContextSet(r, "db2", db2)
+
+				//短连接db，用完就释放
+				defer db2.Close()
+			}
+		}
 
 		h.ServeHTTP(w, r)
 
