@@ -43,8 +43,4 @@ func RouterHandler(router *chi.Mux) {
 	//模拟panic操作
 	//http://localhost:1338/mock-panic
 	router.HandleFunc("/mock-panic", indexCtrl.MockPanic)
-
-	router.Get("/api/user",indexCtrl.User) //测试gorm短连接服务
-
-	router.Get("/api/get-user",indexCtrl.GetUser) //测试xorm短连接db服务
 }
