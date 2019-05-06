@@ -34,8 +34,8 @@ func init() {
 	flag.Parse()
 
 	//日志文件设置
+	common.LogSplit(true)
 	common.SetLogDir(log_dir)
-	common.SetLogTime(false) //自定义日志格式
 
 	//性能报告监控和健康检测，性能监控的端口port+1000,只能在内网访问
 	go func() {
