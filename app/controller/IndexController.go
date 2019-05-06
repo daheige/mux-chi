@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/go-chi/chi"
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"mux-chi/app/config"
 	"mux-chi/app/utils"
 
@@ -36,7 +36,7 @@ func (this *IndexController) Test(w http.ResponseWriter, r *http.Request) {
 //from a route like /info/{userID}
 func (this *IndexController) Info(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
-	log.Println("uid: ",userID)
+	log.Println("uid: ", userID)
 
 	utils.ApiSuccess(w, "hello world", nil)
 }

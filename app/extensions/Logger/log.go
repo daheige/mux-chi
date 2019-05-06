@@ -1,8 +1,6 @@
 package Logger
 
 import (
-	"encoding/json"
-	"log"
 	"mux-chi/app/utils"
 	"net/http"
 	"strings"
@@ -53,7 +51,6 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 			ua := req.Header.Get("User-Agent")
 			logInfo := &LogInfo{
 				Tag:        strings.Replace(req.URL.Path, "/", "_", -1),
-				Message:    "write log error",
 				RequestUri: req.RequestURI,
 				LogId:      logId,
 				RequestId:  requestId,
@@ -67,8 +64,7 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 				Method:   req.Method,
 			}
 
-			json_data, _ := json.Marshal(logInfo)
-			common.ErrorLog(string(json_data))
+			common.ErrorLog("write log error", logInfo)
 		}
 	}()
 
@@ -87,7 +83,6 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 
 	logInfo := &LogInfo{
 		Tag:        tag,
-		Message:    message,
 		RequestUri: req.RequestURI,
 		LogId:      logId.(string),
 		RequestId:  requestId.(string),
@@ -99,25 +94,19 @@ func writeLog(req *http.Request, levelName string, message interface{}, context 
 		Method:     req.Method,
 	}
 
-	json_data, err := json.Marshal(logInfo)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	switch levelName {
 	case "info":
-		common.InfoLog(string(json_data))
+		common.InfoLog(message, logInfo)
 	case "debug":
-		common.DebugLog(string(json_data))
+		common.DebugLog(message, logInfo)
 	case "notice":
-		common.NoticeLog(string(json_data))
+		common.NoticeLog(message, logInfo)
 	case "warn":
-		common.WarnLog(string(json_data))
+		common.WarnLog(message, logInfo)
 	case "error":
-		common.ErrorLog(string(json_data))
+		common.ErrorLog(message, logInfo)
 	default:
-		common.InfoLog(string(json_data))
+		common.InfoLog(message, logInfo)
 	}
 }
 
