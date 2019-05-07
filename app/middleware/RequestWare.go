@@ -58,11 +58,9 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				bytes := common.CatchStack()
-				if len(bytes) > 0 {
-					Logger.Error(r, "exec recover error", map[string]interface{}{
-						"trace_error": string(bytes),
-					})
-				}
+				Logger.Error(r, "exec recover error", map[string]interface{}{
+					"trace_error": string(bytes),
+				})
 
 				//当http请求发生了recover或异常就直接终止
 				utils.HttpCode(w, http.StatusInternalServerError, "server error!")
