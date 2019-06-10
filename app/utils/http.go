@@ -55,7 +55,7 @@ func HttpCode(w http.ResponseWriter, code int, message string) {
 		"message": message,
 	})
 
-	//w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json;charset=utf-8")
 	w.WriteHeader(code)
 	w.Write(json_data)
 }
