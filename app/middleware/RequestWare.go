@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"mux-chi/app/extensions/Logger"
 	"net/http"
 	"time"
@@ -19,7 +18,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 
 		//获取请求id
 		requestId := r.Header.Get("X-Request-Id")
-		log.Println("request before")
+		// log.Println("request before")
 		logId := common.RndUuidMd5() //日志id
 
 		if requestId == "" {
@@ -43,7 +42,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 
 		//请求结束后，记录日志
-		log.Println("request after")
+		// log.Println("request after")
 		Logger.Info(r, "exec end", map[string]interface{}{
 			"App":       "hg-mux",
 			"exec_time": time.Now().Sub(t).Seconds(),
@@ -63,6 +62,7 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 				})
 
 				//当http请求发生了recover或异常就直接终止
+				w.Header().Set("X-Content-Type-Options", "nosniff")
 				utils.HttpCode(w, http.StatusInternalServerError, "server error!")
 				return
 			}

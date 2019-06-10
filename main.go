@@ -16,7 +16,8 @@ import (
 
 	"mux-chi/app/middleware"
 
-	"github.com/daheige/thinkgo/common"
+	"github.com/daheige/thinkgo/logger"
+
 	"github.com/go-chi/chi"
 	chiWare "github.com/go-chi/chi/middleware"
 )
@@ -34,12 +35,14 @@ func init() {
 	flag.Parse()
 
 	//日志文件设置
-	common.LogSplit(true)
-	common.SetLogDir(log_dir)
+	logger.SetLogDir(log_dir)
+	logger.SetLogFile("mux-chi.log")
+	//logger.MaxSize(500)
+	logger.InitLogger()
 
 	//性能报告监控和健康检测，性能监控的端口port+1000,只能在内网访问
 	go func() {
-		defer common.CheckPanic()
+		defer logger.Recover()
 
 		pprof_port := port + 1000
 		log.Println("server pprof run on: ", pprof_port)
@@ -62,10 +65,7 @@ func main() {
 	router := chi.NewRouter()
 
 	// A good base middleware stack
-	//router.Use(chiWare.RequestID)
-	//router.Use(chiWare.RealIP)
-	router.Use(chiWare.Logger)
-	//router.Use(chiWare.Recoverer)
+	router.Use(chiWare.RealIP) //获取客户端真实ip地址中间件
 
 	//请求中间件，记录日志和异常捕获处理
 	reqWare := &middleware.RequestWare{}
@@ -74,8 +74,8 @@ func main() {
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
-	// request timeout
-	router.Use(chiWare.Timeout(60 * time.Second))
+	// request timeout 请求超时设置
+	router.Use(chiWare.Timeout(10 * time.Second))
 
 	//加载路由
 	routes.RouterHandler(router)
@@ -97,14 +97,16 @@ func main() {
 	server := &http.Server{
 		Handler:      router,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		IdleTimeout:       20 * time.Second, //tcp idle time
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
 	}
 
 	//在独立携程中运行
 	log.Println("server run on: ", port)
 	go func() {
-		defer common.CheckPanic()
+		defer logger.Recover()
 
 		if err := server.ListenAndServe(); err != nil {
 			log.Println(err)
