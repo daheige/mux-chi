@@ -12,11 +12,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/daheige/thinkgo/monitor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"mux-chi/app/routes"
 
 	"mux-chi/app/middleware"
 
 	"github.com/daheige/thinkgo/logger"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/go-chi/chi"
 	chiWare "github.com/go-chi/chi/middleware"
@@ -40,6 +44,12 @@ func init() {
 	//logger.MaxSize(500)
 	logger.InitLogger()
 
+	//注册监控指标
+	prometheus.MustRegister(monitor.WebRequestTotal)
+	prometheus.MustRegister(monitor.WebRequestDuration)
+	prometheus.MustRegister(monitor.CpuTemp)
+	prometheus.MustRegister(monitor.HdFailures)
+
 	//性能报告监控和健康检测，性能监控的端口port+1000,只能在内网访问
 	go func() {
 		defer logger.Recover()
@@ -54,6 +64,10 @@ func init() {
 		httpMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		httpMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 		httpMux.HandleFunc("/check", HealthCheckHandler)
+
+		//metrics监控
+		httpMux.Handle("/metrics", promhttp.Handler())
+
 		if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", pprof_port), httpMux); err != nil {
 			log.Println(err)
 		}
@@ -69,7 +83,9 @@ func main() {
 
 	//请求中间件，记录日志和异常捕获处理
 	reqWare := &middleware.RequestWare{}
-	router.Use(reqWare.LogAccess, reqWare.Recover)
+
+	//对请求打点监控
+	router.Use(reqWare.LogAccess, reqWare.Recover, monitor.MonitorHandler)
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
@@ -95,8 +111,8 @@ func main() {
 	//}
 
 	server := &http.Server{
-		Handler:      router,
-		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+		Handler:           router,
+		Addr:              fmt.Sprintf("0.0.0.0:%d", port),
 		IdleTimeout:       20 * time.Second, //tcp idle time
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
