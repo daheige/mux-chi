@@ -19,6 +19,8 @@ func RouterHandler(router *chi.Mux) {
 	router.HandleFunc("/post", homeCtrl.Post)
 	router.Post("/home/post", homeCtrl.Post) //post路由
 
+	router.Get("/get-info", homeCtrl.Info) //模拟参数校验
+
 	indexCtrl := &controller.IndexController{}
 	router.HandleFunc("/home", indexCtrl.Home)
 	router.HandleFunc("/index", indexCtrl.Home)
