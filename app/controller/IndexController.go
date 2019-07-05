@@ -4,9 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"mux-chi/app/config"
 	"mux-chi/app/utils"
+
+	"github.com/go-chi/chi"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -22,7 +23,7 @@ func (this *IndexController) Test(w http.ResponseWriter, r *http.Request) {
 	conn, err := config.GetRedisObj("default")
 	log.Println("err: ", err)
 	if err != nil {
-		utils.ApiError(w, "redis connection error")
+		utils.ApiError(w, 1001, "redis connection error")
 		return
 	}
 

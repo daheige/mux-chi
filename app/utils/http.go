@@ -10,22 +10,30 @@ import (
 )
 
 const (
-	HTTP_SUCCESS_CODE = 200
-	HTTP_ERROR_CODE   = 500
+	HTTP_SUCCESS_CODE = 200 //http ok 200
+	HTTP_ERROR_CODE   = 500 //http error 500
+	API_SUCCESS_CODE  = 0   //api success
 )
 
+//map短类型声明
 type H map[string]interface{}
 
-//api 响应的结果
-func Json(w http.ResponseWriter, code int, message string, data interface{}) {
-	json_data, _ := json.Marshal(H{
-		"code":     code,
-		"message":  message,
-		"data":     data,
-		"req_time": time.Now().Unix(),
-	})
+//空数组[]兼容其他语言php,js,python等
+type EmptyArray []struct{}
 
-	w.WriteHeader(HTTP_SUCCESS_CODE)
+//直接返回json data数据
+func Json(w http.ResponseWriter, data interface{}) {
+	writeJson(w, HTTP_SUCCESS_CODE, data)
+}
+
+func writeJson(w http.ResponseWriter, httpCode int, data interface{}) {
+	json_data, err := json.Marshal(data)
+	if err != nil {
+		json_data = []byte(`{"code":500,"message":"server error"}`)
+	}
+
+	w.Header().Set("Content-Type", "application/json;charset=utf-8")
+	w.WriteHeader(httpCode)
 	w.Write(json_data)
 }
 
@@ -36,26 +44,30 @@ func ApiSuccess(w http.ResponseWriter, message string, data interface{}) {
 		message = "ok"
 	}
 
-	Json(w, HTTP_SUCCESS_CODE, message, data)
+	writeJson(w, HTTP_SUCCESS_CODE, H{
+		"code":     API_SUCCESS_CODE,
+		"message":  message,
+		"data":     data,
+		"req_time": time.Now().Unix(),
+	})
 }
 
 //错误处理code,message
-func ApiError(w http.ResponseWriter, message string) {
-	Json(w, HTTP_ERROR_CODE, message, nil)
+func ApiError(w http.ResponseWriter, code int, message string) {
+	writeJson(w, HTTP_SUCCESS_CODE, H{
+		"code":     code,
+		"message":  message,
+		"req_time": time.Now().Unix(),
+	})
 }
 
 //指定http code,message返回
-func HttpCode(w http.ResponseWriter, code int, message string) {
-	if code <= 0 {
-		code = HTTP_ERROR_CODE
+func HttpCode(w http.ResponseWriter, httpCode int, message string) {
+	if httpCode <= 0 {
+		httpCode = HTTP_ERROR_CODE
 	}
 
-	json_data, _ := json.Marshal(map[string]interface{}{
-		"code":    code,
+	writeJson(w, httpCode, H{
 		"message": message,
 	})
-
-	w.Header().Set("Content-Type", "application/json;charset=utf-8")
-	w.WriteHeader(code)
-	w.Write(json_data)
 }
