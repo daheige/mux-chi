@@ -21,7 +21,7 @@ func writeLog(req *http.Request, levelName string, message string, opts map[stri
 	_, file, line, _ := runtime.Caller(2)
 
 	logInfo := map[string]interface{}{
-		"tag":         tag,
+		"tag":         strings.TrimLeft(tag, "_"),
 		"request_uri": req.RequestURI,
 		"log_id":      logId,
 		"host":        req.Host, //host
