@@ -57,11 +57,12 @@
         Running 2m test @ http://localhost:1338/index
         8 threads and 100 connections
         Thread Stats   Avg      Stdev     Max   +/- Stdev
-            Latency    21.64ms   39.32ms 760.53ms   95.76%
-            Req/Sec   780.59    194.40     1.46k    70.29%
-        738967 requests in 2.00m, 124.74MB read
-        Requests/sec:   6153.85
-        Transfer/sec:      1.04MB
+            Latency    17.45ms   31.76ms 633.02ms   95.52%
+            Req/Sec     0.95k   180.65     1.64k    72.94%
+        882466 requests in 2.00m, 148.96MB read
+        Socket errors: connect 0, read 0, write 0, timeout 96
+        Requests/sec:   7351.26
+        Transfer/sec:      1.24MB
 
 # 第三方包
   redisgo
