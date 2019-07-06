@@ -30,6 +30,10 @@ func RouterHandler(router *chi.Mux) {
 	//路由参数
 	router.Get("/info/{userID}", indexCtrl.Info)
 
+	//正则路由
+	//http://localhost:1338/api/user/123
+	router.Get("/api/{category}/{id:[0-9]+}", indexCtrl.Category)
+
 	//路由前缀 /road开始，子路由设置
 	router.Route("/road", func(router chi.Router) { //chi.Router作为参数
 		router.Get("/left", func(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +44,16 @@ func RouterHandler(router *chi.Mux) {
 		router.Post("/right", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("right road"))
 		})
+	})
+
+	//设置article_id到上下文
+	//上下文中间件处理
+	//http://localhost:1338/api/articles/123fe
+	router.Route("/api/articles/{articleID}", func(r chi.Router) {
+		r.Use(indexCtrl.ArticleIdCtx)
+		r.Get("/", indexCtrl.GetArticleId)       // GET /api/articles/123
+		r.Put("/", indexCtrl.UpdateArticleId)    // PUT /api/articles/articles/123
+		r.Delete("/", indexCtrl.DeleteArticleId) // DELETE /api/articles/123
 	})
 
 	//模拟panic操作

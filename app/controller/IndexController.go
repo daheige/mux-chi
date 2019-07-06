@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -45,4 +46,71 @@ func (this *IndexController) Info(w http.ResponseWriter, r *http.Request) {
 //模拟发生panic操作
 func (this *IndexController) MockPanic(w http.ResponseWriter, r *http.Request) {
 	panic(111)
+}
+
+//category
+func (this *IndexController) Category(w http.ResponseWriter, r *http.Request) {
+	category := chi.URLParam(r, "category")
+	id := chi.URLParam(r, "id")
+
+	utils.Json(w, utils.H{
+		"code":    200,
+		"message": "ok",
+		"data": map[string]interface{}{
+			"category": category,
+			"id":       id,
+		},
+	})
+}
+
+//设置http context value 中间件
+func (this *IndexController) ArticleIdCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		articleID := chi.URLParam(r, "articleID")
+
+		//设置上下文article_id
+		ctx := context.WithValue(r.Context(), "article_id", articleID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (this *IndexController) GetArticleId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	articleId, ok := ctx.Value("article_id").(string)
+	if !ok {
+		utils.ApiError(w, 422, http.StatusText(422))
+		return
+	}
+
+	utils.ApiSuccess(w, "ok", utils.H{
+		"articleId": articleId,
+	})
+}
+
+func (this *IndexController) UpdateArticleId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	articleId, ok := ctx.Value("article_id").(string)
+	if !ok {
+		utils.ApiError(w, 422, http.StatusText(422))
+		return
+	}
+
+	articleId = "456"
+	utils.ApiSuccess(w, "ok", utils.H{
+		"articleId": articleId,
+	})
+}
+
+func (this *IndexController) DeleteArticleId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	articleId, ok := ctx.Value("article_id").(string)
+	if !ok {
+		utils.ApiError(w, 422, http.StatusText(422))
+		return
+	}
+
+	log.Println("article_id: ", articleId)
+
+	articleId = ""
+	utils.ApiSuccess(w, "delete success", nil)
 }
