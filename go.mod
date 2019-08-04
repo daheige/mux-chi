@@ -3,7 +3,7 @@ module mux-chi
 go 1.12
 
 require (
-	github.com/daheige/thinkgo v1.2.11
+	github.com/daheige/thinkgo v1.2.12
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
