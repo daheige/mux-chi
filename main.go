@@ -23,6 +23,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/go-chi/chi"
+
 	chiWare "github.com/go-chi/chi/middleware"
 )
 
@@ -79,19 +80,22 @@ func main() {
 	router := chi.NewRouter()
 
 	// A good base middleware stack
-	router.Use(chiWare.RealIP) //获取客户端真实ip地址中间件
+	// router.Use(chiWare.RealIP) //获取客户端真实ip地址中间件
 
 	//请求中间件，记录日志和异常捕获处理
 	reqWare := &middleware.RequestWare{}
 
 	//对请求打点监控
-	router.Use(reqWare.LogAccess, reqWare.Recover, monitor.MonitorHandler)
+	router.Use(reqWare.LogAccess, reqWare.Recover)
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
 	// request timeout 请求超时设置
 	router.Use(chiWare.Timeout(10 * time.Second))
+
+	// prometheus性能监控打点
+	router.Use(monitor.MonitorHandler)
 
 	//加载路由
 	routes.RouterHandler(router)

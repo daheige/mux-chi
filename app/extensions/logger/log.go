@@ -1,4 +1,4 @@
-package Logger
+package logger
 
 import (
 	"mux-chi/app/utils"

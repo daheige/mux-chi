@@ -34,7 +34,7 @@ type InfoReq struct {
 	Name  string `json:"name" validate:"omitempty,max=10"`
 }
 
-//测试参数校验
+// Info 测试参数校验
 //http://localhost:1338/get-info?limit=12&uid=1&name=abcdeabcde
 func (this *HomeController) Info(w http.ResponseWriter, r *http.Request) {
 	//接收参数
@@ -59,5 +59,12 @@ func (this *HomeController) Info(w http.ResponseWriter, r *http.Request) {
 	utils.ApiSuccess(w, "success", utils.H{
 		"uid":   req.Uid,
 		"limit": req.Limit,
+	})
+}
+
+func (this *HomeController) Hello(w http.ResponseWriter, r *http.Request) {
+	utils.ApiSuccess(w, "success", utils.H{
+		"id":   1,
+		"name": "mux-chi",
 	})
 }
