@@ -3,23 +3,23 @@ package config
 import (
 	"errors"
 
-	"github.com/daheige/thinkgo/redisCache"
-	"github.com/daheige/thinkgo/yamlConf"
+	"github.com/daheige/thinkgo/rediscache"
+	"github.com/daheige/thinkgo/yamlconf"
 
 	"github.com/gomodule/redigo/redis"
 )
 
 var AppEnv string
-var conf *yamlConf.ConfigEngine
+var conf *yamlconf.ConfigEngine
 
 func InitConf(path string) {
-	conf = yamlConf.NewConf()
+	conf = yamlconf.NewConf()
 	conf.LoadConf(path + "/app.yaml")
 }
 
 func InitRedis() {
 	//初始化redis
-	redisConf := &redisCache.RedisConf{}
+	redisConf := &rediscache.RedisConf{}
 	conf.GetStruct("RedisCommon", redisConf)
 
 	// log.Println(redisConf)
@@ -28,7 +28,7 @@ func InitRedis() {
 
 //从连接池中获取redis client
 func GetRedisObj(name string) (redis.Conn, error) {
-	conn := redisCache.GetRedisClient(name)
+	conn := rediscache.GetRedisClient(name)
 	if conn == nil {
 		return nil, errors.New("get redis client error")
 	}

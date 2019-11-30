@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"mux-chi/app/extensions/Logger"
+	"mux-chi/app/extensions/logger"
 	"net/http"
 	"time"
 
 	"mux-chi/app/utils"
 
-	"github.com/daheige/thinkgo/common"
+	"github.com/daheige/thinkgo/grecover"
+	"github.com/daheige/thinkgo/gutils"
 )
 
 type RequestWare struct{}
@@ -19,7 +20,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		//获取请求id
 		requestId := r.Header.Get("X-Request-Id")
 		// log.Println("request before")
-		logId := common.RndUuidMd5() //日志id
+		logId := gutils.RndUuidMd5() //日志id
 
 		if requestId == "" {
 			requestId = logId
@@ -35,7 +36,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		// log.Println(utils.ContextGet(r, "log_id"))
 
 		//log.Println("request uri: ", r.RequestURI)
-		Logger.Info(r, "exec begin", map[string]interface{}{
+		logger.Info(r, "exec begin", map[string]interface{}{
 			"App": "hg-mux",
 		})
 
@@ -43,7 +44,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 
 		//请求结束后，记录日志
 		// log.Println("request after")
-		Logger.Info(r, "exec end", map[string]interface{}{
+		logger.Info(r, "exec end", map[string]interface{}{
 			"App":       "hg-mux",
 			"exec_time": time.Now().Sub(t).Seconds(),
 		})
@@ -56,8 +57,8 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				bytes := common.CatchStack()
-				Logger.Error(r, "exec recover error", map[string]interface{}{
+				bytes := grecover.CatchStack()
+				logger.Error(r, "exec recover error", map[string]interface{}{
 					"trace_error": string(bytes),
 				})
 
