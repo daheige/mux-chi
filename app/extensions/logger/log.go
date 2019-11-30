@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"mux-chi/app/utils"
-	"runtime"
 	"runtime/debug"
 	"strings"
 
@@ -24,8 +23,6 @@ func writeLog(ctx context.Context, levelName string, message string, options map
 
 	ua := getStringByCtx(ctx, "user_agent")
 
-	//函数调用
-	_, file, line, _ := runtime.Caller(2)
 	logInfo := map[string]interface{}{
 		"tag":            tag,
 		"request_uri":    reqUri,
@@ -35,8 +32,6 @@ func writeLog(ctx context.Context, levelName string, message string, options map
 		"ua":             ua,
 		"plat":           utils.GetDeviceByUa(ua), //当前设备匹配
 		"request_method": getStringByCtx(ctx, "request_method"),
-		"trace_line":     line,
-		"trace_file":     file,
 	}
 
 	switch levelName {

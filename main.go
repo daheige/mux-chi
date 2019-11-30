@@ -44,7 +44,7 @@ func init() {
 	logger.SetLogFile("mux-chi.log")
 	//logger.MaxSize(500)
 
-	//由于mux-chi/app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3
+	//由于app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3
 	logger.InitLogger(3)
 
 	//注册监控指标
