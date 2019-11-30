@@ -1,40 +1,42 @@
 package logger
 
 import (
+	"context"
 	"mux-chi/app/utils"
-	"net/http"
-	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 
+	"github.com/daheige/thinkgo/gutils"
 	"github.com/daheige/thinkgo/logger"
 )
 
-func writeLog(req *http.Request, levelName string, message string, opts map[string]interface{}) {
-	tag := strings.Replace(req.RequestURI, "/", "_", -1)
-	ua := req.Header.Get("User-Agent")
+func writeLog(ctx context.Context, levelName string, message string, options map[string]interface{}) {
+	reqUri := getStringByCtx(ctx, "request_uri")
+	tag := strings.Replace(reqUri, "/", "_", -1)
+	tag = strings.Replace(tag, ".", "_", -1)
+	tag = strings.TrimLeft(tag, "_")
 
-	//日志信息
-	logId := req.Context().Value("log_id")
-
-	//函数调用信息
-	_, file, line, _ := runtime.Caller(2)
-
-	logInfo := map[string]interface{}{
-		"tag":         strings.TrimLeft(tag, "_"),
-		"request_uri": req.RequestURI,
-		"log_id":      logId,
-		"host":        req.Host, //host
-		"trace_line":  line,
-		"trace_file":  filepath.Base(file),
-		"ua":          ua,
-		"client_ip":   req.RemoteAddr,          //客户端真实ip地址
-		"plat":        utils.GetDeviceByUa(ua), //当前设备匹配
-		"method":      req.Method,
+	logId := getStringByCtx(ctx, "log_id")
+	if logId == "" {
+		logId = gutils.RndUuid()
 	}
 
-	if len(opts) > 0 {
-		logInfo["context"] = opts
+	ua := getStringByCtx(ctx, "user_agent")
+
+	//函数调用
+	_, file, line, _ := runtime.Caller(2)
+	logInfo := map[string]interface{}{
+		"tag":            tag,
+		"request_uri":    reqUri,
+		"log_id":         logId,
+		"options":        options,
+		"ip":             getStringByCtx(ctx, "client_ip"),
+		"ua":             ua,
+		"plat":           utils.GetDeviceByUa(ua), //当前设备匹配
+		"request_method": getStringByCtx(ctx, "request_method"),
+		"trace_line":     line,
+		"trace_file":     file,
 	}
 
 	switch levelName {
@@ -53,22 +55,40 @@ func writeLog(req *http.Request, levelName string, message string, opts map[stri
 	}
 }
 
-func Info(req *http.Request, message string, options map[string]interface{}) {
-	writeLog(req, "info", message, options)
+func getStringByCtx(ctx context.Context, key string) string {
+	return utils.GetStringByCtx(ctx, key)
 }
 
-func Debug(req *http.Request, message string, options map[string]interface{}) {
-	writeLog(req, "debug", message, options)
+func Info(ctx context.Context, message string, context map[string]interface{}) {
+	writeLog(ctx, "info", message, context)
 }
 
-func Warn(req *http.Request, message string, options map[string]interface{}) {
-	writeLog(req, "warn", message, options)
+func Debug(ctx context.Context, message string, context map[string]interface{}) {
+	writeLog(ctx, "debug", message, context)
 }
 
-func Error(req *http.Request, message string, options map[string]interface{}) {
-	writeLog(req, "error", message, options)
+func Warn(ctx context.Context, message string, context map[string]interface{}) {
+	writeLog(ctx, "warn", message, context)
 }
 
-func Emergency(req *http.Request, message string, options map[string]interface{}) {
-	writeLog(req, "emergency", message, options)
+func Error(ctx context.Context, message string, context map[string]interface{}) {
+	writeLog(ctx, "error", message, context)
+}
+
+//致命错误或panic捕获
+func Emergency(ctx context.Context, message string, context map[string]interface{}) {
+	writeLog(ctx, "emergency", message, context)
+}
+
+// Recover 异常捕获处理
+func Recover() {
+	defer func() {
+		if err := recover(); err != nil {
+			logger.DPanic("exec panic", map[string]interface{}{
+				"error":       err,
+				"error_trace": string(debug.Stack()),
+			})
+		}
+	}()
+
 }

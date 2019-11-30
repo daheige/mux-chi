@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"log"
+	"mux-chi/app/extensions/logger"
 	"net/http"
 
 	"mux-chi/app/config"
@@ -16,6 +17,8 @@ import (
 type IndexController struct{}
 
 func (this *IndexController) Home(w http.ResponseWriter, r *http.Request) {
+	logger.Info(r.Context(), "fefefe", nil)
+
 	w.Write([]byte("hello hg-mux"))
 }
 

@@ -43,7 +43,9 @@ func init() {
 	logger.SetLogDir(log_dir)
 	logger.SetLogFile("mux-chi.log")
 	//logger.MaxSize(500)
-	logger.InitLogger()
+
+	//由于mux-chi/app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3
+	logger.InitLogger(3)
 
 	//注册监控指标
 	prometheus.MustRegister(monitor.WebRequestTotal)

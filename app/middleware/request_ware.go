@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"mux-chi/app/extensions/logger"
 	"net/http"
 	"time"
@@ -35,8 +36,9 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		r = utils.ContextSet(r, "request_id", requestId)
 		// log.Println(utils.ContextGet(r, "log_id"))
 
+		ctx := r.Context()
 		//log.Println("request uri: ", r.RequestURI)
-		logger.Info(r, "exec begin", map[string]interface{}{
+		logger.Info(ctx, "exec begin", map[string]interface{}{
 			"App": "hg-mux",
 		})
 
@@ -44,7 +46,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 
 		//请求结束后，记录日志
 		// log.Println("request after")
-		logger.Info(r, "exec end", map[string]interface{}{
+		logger.Info(ctx, "exec end", map[string]interface{}{
 			"App":       "hg-mux",
 			"exec_time": time.Now().Sub(t).Seconds(),
 		})
@@ -58,21 +60,23 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				bytes := grecover.CatchStack()
-				logger.Error(r, "exec recover error", map[string]interface{}{
+
+				ctx := r.Context()
+				if ctx == nil {
+					ctx = context.Background()
+				}
+
+				logger.Error(ctx, "exec recover error", map[string]interface{}{
 					"trace_error": string(bytes),
 				})
 
 				//当http请求发生了recover或异常就直接终止
-				w.Header().Set("X-Content-Type-Options", "nosniff")
+				// w.Header().Set("X-Content-Type-Options", "nosniff")
+
 				utils.HttpCode(w, http.StatusInternalServerError, "server error!")
 				return
 			}
 		}()
-
-		if r.RequestURI == "/favicon.ico" {
-			w.Write([]byte("ok"))
-			return
-		}
 
 		h.ServeHTTP(w, r)
 	})
