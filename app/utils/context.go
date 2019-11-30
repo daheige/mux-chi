@@ -21,3 +21,18 @@ func ContextSet(r *http.Request, key, val interface{}) *http.Request {
 
 	return r.WithContext(context.WithValue(r.Context(), key, val))
 }
+
+// GetStringByCtx 从上下文获取字符串类型的key
+func GetStringByCtx(ctx context.Context, key string) string {
+	val := ctx.Value(key)
+	if val == nil {
+		return ""
+	}
+
+	str, ok := val.(string)
+	if !ok {
+		return ""
+	}
+
+	return str
+}

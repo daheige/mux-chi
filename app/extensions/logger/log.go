@@ -72,3 +72,4 @@ func Error(req *http.Request, message string, options map[string]interface{}) {
 func Emergency(req *http.Request, message string, options map[string]interface{}) {
 	writeLog(req, "emergency", message, options)
 }
+
