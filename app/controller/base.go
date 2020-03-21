@@ -3,7 +3,7 @@ package controller
 import (
 	"strconv"
 
-	"github.com/go-playground/validator"
+	validator "github.com/go-playground/validator/v10"
 )
 
 var validate *validator.Validate
