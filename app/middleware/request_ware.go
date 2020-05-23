@@ -84,5 +84,5 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 
 //404处理函数
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	utils.HttpCode(w, http.StatusNotFound, "404 - page not found")
+	utils.HttpCode(w, http.StatusNotFound, "this page not found")
 }
