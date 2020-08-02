@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 
-	"github.com/daheige/thinkgo/rediscache"
+	"github.com/daheige/thinkgo/gredigo"
 	"github.com/daheige/thinkgo/yamlconf"
 
 	"github.com/gomodule/redigo/redis"
@@ -19,7 +19,7 @@ func InitConf(path string) {
 
 func InitRedis() {
 	//初始化redis
-	redisConf := &rediscache.RedisConf{}
+	redisConf := &gredigo.RedisConf{}
 	conf.GetStruct("RedisCommon", redisConf)
 
 	// log.Println(redisConf)
@@ -28,7 +28,7 @@ func InitRedis() {
 
 //从连接池中获取redis client
 func GetRedisObj(name string) (redis.Conn, error) {
-	conn := rediscache.GetRedisClient(name)
+	conn := gredigo.GetRedisClient(name)
 	if conn == nil {
 		return nil, errors.New("get redis client error")
 	}
