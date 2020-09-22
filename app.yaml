@@ -1,7 +1,12 @@
 #配置文件
-AppEnv: "local"
-AppDebug: true
-AppName: mux-chi
+AppServer:
+  AppEnv: "local"
+  AppDebug: true
+  AppName: mux-chi
+  HttpPort: 1338
+  PProfPort: 2338
+  GracefulWait: 5
+  LogDir: ./logs # log dir
 
 #redis配置
 RedisCommon:

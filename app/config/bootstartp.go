@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/daheige/thinkgo/gredigo"
 	"github.com/daheige/thinkgo/yamlconf"
@@ -12,9 +13,7 @@ import (
 )
 
 var (
-	AppEnv   string // app_env
-	AppDebug bool   // app_debug
-	conf     *yamlconf.ConfigEngine
+	conf *yamlconf.ConfigEngine
 )
 
 // InitConf init config.
@@ -30,8 +29,31 @@ func InitConf(path string) {
 		log.Fatalln("load config error: ", err)
 	}
 
-	AppEnv = conf.GetString("AppEnv", "production")
-	AppDebug = conf.GetBool("AppDebug", false)
+	InitAppConfig()
+}
+
+// InitAppConfig init app config.
+func InitAppConfig() {
+	conf.GetStruct("AppServer", &AppConf)
+	if AppConf.AppEnv == "" {
+		AppConf.AppEnv = "production"
+	}
+
+	if AppConf.HttpPort == 0 {
+		AppConf.HttpPort = 1338
+	}
+
+	if AppConf.PProfPort == 0 {
+		AppConf.PProfPort = AppConf.HttpPort + 1000
+	}
+
+	if AppConf.GracefulWait == 0 {
+		AppConf.GracefulWait = 5 * time.Second
+	} else {
+		AppConf.GracefulWait *= time.Second
+	}
+
+	log.Println("app: ", AppConf)
 }
 
 // InitRedis初始化redis

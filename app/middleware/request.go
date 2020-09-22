@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"context"
-	"mux-chi/app/extensions/logger"
 	"net/http"
 	"time"
+
+	"mux-chi/app/config"
+	"mux-chi/app/extensions/logger"
 
 	"mux-chi/app/utils"
 
@@ -12,49 +14,51 @@ import (
 	"github.com/daheige/thinkgo/gutils"
 )
 
+// RequestWare request middleware.
 type RequestWare struct{}
 
+// LogAccess access_log
 func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
 
-		//获取请求id
+		// 获取请求id
 		requestId := r.Header.Get("X-Request-Id")
 		// log.Println("request before")
-		logId := gutils.RndUuidMd5() //日志id
+		logId := gutils.RndUuidMd5() // 日志id
 
 		if requestId == "" {
 			requestId = logId
 
-			//如果采用了nginx x-request-id功能，可以注释下面一行
+			// 如果采用了nginx x-request-id功能，可以注释下面一行
 			w.Header().Set("x-request-id", requestId)
 		}
 
-		//log.Println("log_id: ", logId)
-		//将requestId 写入当前上下文中
+		// log.Println("log_id: ", logId)
+		// 将requestId 写入当前上下文中
 		r = utils.ContextSet(r, "log_id", logId)
 		r = utils.ContextSet(r, "request_id", requestId)
 		// log.Println(utils.ContextGet(r, "log_id"))
 
 		ctx := r.Context()
-		//log.Println("request uri: ", r.RequestURI)
+		// log.Println("request uri: ", r.RequestURI)
 		logger.Info(ctx, "exec begin", map[string]interface{}{
 			"App": "hg-mux",
 		})
 
 		h.ServeHTTP(w, r)
 
-		//请求结束后，记录日志
+		// 请求结束后，记录日志
 		// log.Println("request after")
 		logger.Info(ctx, "exec end", map[string]interface{}{
-			"App":       "hg-mux",
+			"module":    config.AppConf.AppName,
 			"exec_time": time.Now().Sub(t).Seconds(),
 		})
 	})
 }
 
-//当请求发生了异常或致命错误，需要捕捉r,w执行上下文的错误
-//该Recover设计灵感来源于golang gin框架的WriteHeaderNow()设计
+// Recover当请求发生了异常或致命错误，需要捕捉r,w执行上下文的错误
+// 该Recover设计灵感来源于golang gin框架的WriteHeaderNow()设计
 func (this *RequestWare) Recover(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -70,7 +74,7 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 					"trace_error": string(bytes),
 				})
 
-				//当http请求发生了recover或异常就直接终止
+				// 当http请求发生了recover或异常就直接终止
 				// w.Header().Set("X-Content-Type-Options", "nosniff")
 
 				utils.HttpCode(w, http.StatusInternalServerError, "server error!")
@@ -82,7 +86,7 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 	})
 }
 
-//404处理函数
+// NotFoundHandler 404处理函数
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	utils.HttpCode(w, http.StatusNotFound, "this page not found")
 }
