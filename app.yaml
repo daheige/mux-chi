@@ -1,5 +1,6 @@
 #配置文件
 AppEnv: "local"
+AppDebug: true
 AppName: mux-chi
 
 #redis配置

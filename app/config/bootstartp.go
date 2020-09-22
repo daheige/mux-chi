@@ -2,6 +2,8 @@ package config
 
 import (
 	"errors"
+	"log"
+	"path/filepath"
 
 	"github.com/daheige/thinkgo/gredigo"
 	"github.com/daheige/thinkgo/yamlconf"
@@ -9,16 +11,31 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-var AppEnv string
-var conf *yamlconf.ConfigEngine
+var (
+	AppEnv   string // app_env
+	AppDebug bool   // app_debug
+	conf     *yamlconf.ConfigEngine
+)
 
+// InitConf init config.
 func InitConf(path string) {
+	dir, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalln("config_dir path error: ", err)
+	}
+
 	conf = yamlconf.NewConf()
-	conf.LoadConf(path + "/app.yaml")
+	err = conf.LoadConf(filepath.Join(dir, "app.yaml"))
+	if err != nil {
+		log.Fatalln("load config error: ", err)
+	}
+
+	AppEnv = conf.GetString("AppEnv", "production")
+	AppDebug = conf.GetBool("AppDebug", false)
 }
 
+// InitRedis初始化redis
 func InitRedis() {
-	//初始化redis
 	redisConf := &gredigo.RedisConf{}
 	conf.GetStruct("RedisCommon", redisConf)
 
@@ -26,11 +43,15 @@ func InitRedis() {
 	redisConf.SetRedisPool("default")
 }
 
-//从连接池中获取redis client
+// 从连接池中获取redis client
 func GetRedisObj(name string) (redis.Conn, error) {
 	conn := gredigo.GetRedisClient(name)
 	if conn == nil {
 		return nil, errors.New("get redis client error")
+	}
+
+	if conn.Err() != nil {
+		return nil, conn.Err()
 	}
 
 	return conn, nil
