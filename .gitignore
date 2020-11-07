@@ -4,3 +4,7 @@ mux-chi.exe
 mux-chi
 mytest/*
 vendor/*
+.exe
+mytest/*
+logs/*
+
