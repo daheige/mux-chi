@@ -7,8 +7,8 @@ import (
 
 	"mux-chi/app/extensions/logger"
 
-	"mux-chi/app/config"
 	"mux-chi/app/utils"
+	"mux-chi/config"
 
 	"github.com/go-chi/chi"
 
