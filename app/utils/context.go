@@ -8,12 +8,12 @@ import (
 	"net/http"
 )
 
-//从请求上下文获取指定的key值
+// ContextGet 从请求上下文获取指定的key值
 func ContextGet(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
 }
 
-//将指定的key/val设置到上下文中
+// ContextSet 将指定的key/val设置到上下文中
 func ContextSet(r *http.Request, key, val interface{}) *http.Request {
 	if val == nil {
 		return r

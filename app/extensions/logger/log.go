@@ -2,9 +2,10 @@ package logger
 
 import (
 	"context"
-	"mux-chi/app/utils"
 	"runtime/debug"
 	"strings"
+
+	"mux-chi/app/utils"
 
 	"github.com/daheige/thinkgo/gutils"
 	"github.com/daheige/thinkgo/logger"
@@ -30,7 +31,7 @@ func writeLog(ctx context.Context, levelName string, message string, options map
 		"options":        options,
 		"ip":             getStringByCtx(ctx, "client_ip"),
 		"ua":             ua,
-		"plat":           utils.GetDeviceByUa(ua), //当前设备匹配
+		"plat":           utils.GetDeviceByUa(ua), // 当前设备匹配
 		"request_method": getStringByCtx(ctx, "request_method"),
 	}
 
@@ -54,36 +55,37 @@ func getStringByCtx(ctx context.Context, key string) string {
 	return utils.GetStringByCtx(ctx, key)
 }
 
+//Info info log.
 func Info(ctx context.Context, message string, context map[string]interface{}) {
 	writeLog(ctx, "info", message, context)
 }
 
+// Debug debug log.
 func Debug(ctx context.Context, message string, context map[string]interface{}) {
 	writeLog(ctx, "debug", message, context)
 }
 
+// Warn warn log.
 func Warn(ctx context.Context, message string, context map[string]interface{}) {
 	writeLog(ctx, "warn", message, context)
 }
 
+// Error error.
 func Error(ctx context.Context, message string, context map[string]interface{}) {
 	writeLog(ctx, "error", message, context)
 }
 
-//致命错误或panic捕获
+// Emergency 致命错误或panic捕获
 func Emergency(ctx context.Context, message string, context map[string]interface{}) {
 	writeLog(ctx, "emergency", message, context)
 }
 
 // Recover 异常捕获处理
 func Recover() {
-	defer func() {
-		if err := recover(); err != nil {
-			logger.DPanic("exec panic", map[string]interface{}{
-				"error":       err,
-				"error_trace": string(debug.Stack()),
-			})
-		}
-	}()
-
+	if err := recover(); err != nil {
+		logger.DPanic("exec panic", map[string]interface{}{
+			"error":       err,
+			"error_trace": string(debug.Stack()),
+		})
+	}
 }

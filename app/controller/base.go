@@ -28,6 +28,7 @@ func (b *BaseController) getInt(s string) (int, error) {
 	return num, nil
 }
 
+// GetInt get int.
 func (b *BaseController) GetInt(s string) int {
 	num, _ := b.getInt(s)
 	return num

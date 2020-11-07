@@ -3,19 +3,18 @@ package utils
 
 import "regexp"
 
-//根据ua获取设备名称
+var (
+	regAdr = regexp.MustCompile("(a|A)ndroid|dr")
+	regIos = regexp.MustCompile("i(p|P)(hone|ad|od)|(m|M)ac")
+)
+
+// GetDeviceByUa 根据ua获取设备名称
 func GetDeviceByUa(ua string) string {
 	plat := "web"
-	regText := "(a|A)ndroid|dr"
-	re := regexp.MustCompile(regText)
-	if re.MatchString(ua) {
+	if regAdr.MatchString(ua) {
 		plat = "android"
-	} else {
-		regText = "i(p|P)(hone|ad|od)|(m|M)ac"
-		re = regexp.MustCompile(regText)
-		if re.MatchString(ua) {
-			plat = "ios"
-		}
+	} else if regIos.MatchString(ua) {
+		plat = "ios"
 	}
 
 	return plat

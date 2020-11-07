@@ -10,20 +10,20 @@ import (
 )
 
 const (
-	HTTP_SUCCESS_CODE = 200 //http ok 200
-	HTTP_ERROR_CODE   = 500 //http error 500
-	API_SUCCESS_CODE  = 0   //api success
+	HttpSuccessCode = 200 // http ok 200
+	HttpErrorCode   = 500 // http error 500
+	ApiSuccessCode  = 0   // api success
 )
 
-//map短类型声明
+// H map短类型声明
 type H map[string]interface{}
 
-//空数组[]兼容其他语言php,js,python等
+// EmptyArray 空数组[]兼容其他语言php,js,python等
 type EmptyArray []struct{}
 
-//直接返回json data数据
+// Json 直接返回json data数据
 func Json(w http.ResponseWriter, data interface{}) {
-	writeJson(w, HTTP_SUCCESS_CODE, data)
+	writeJson(w, HttpSuccessCode, data)
 }
 
 func writeJson(w http.ResponseWriter, httpCode int, data interface{}) {
@@ -37,34 +37,34 @@ func writeJson(w http.ResponseWriter, httpCode int, data interface{}) {
 	w.Write(json_data)
 }
 
-//请求成功返回结果
-//data,message
+// ApiSuccess 请求成功返回结果
+// data,message
 func ApiSuccess(w http.ResponseWriter, message string, data interface{}) {
 	if message == "" {
 		message = "ok"
 	}
 
-	writeJson(w, HTTP_SUCCESS_CODE, H{
-		"code":     API_SUCCESS_CODE,
+	writeJson(w, HttpSuccessCode, H{
+		"code":     ApiSuccessCode,
 		"message":  message,
 		"data":     data,
 		"req_time": time.Now().Unix(),
 	})
 }
 
-//错误处理code,message
+// ApiError 错误处理code,message
 func ApiError(w http.ResponseWriter, code int, message string) {
-	writeJson(w, HTTP_SUCCESS_CODE, H{
+	writeJson(w, HttpSuccessCode, H{
 		"code":     code,
 		"message":  message,
 		"req_time": time.Now().Unix(),
 	})
 }
 
-//指定http code,message返回
+// HttpCode 指定http code,message返回
 func HttpCode(w http.ResponseWriter, httpCode int, message string) {
 	if httpCode <= 0 {
-		httpCode = HTTP_ERROR_CODE
+		httpCode = HttpErrorCode
 	}
 
 	writeJson(w, httpCode, H{

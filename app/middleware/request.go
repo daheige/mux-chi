@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"mux-chi/app/config"
 	"mux-chi/app/extensions/logger"
 
 	"mux-chi/app/utils"
@@ -17,8 +16,8 @@ import (
 // RequestWare request middleware.
 type RequestWare struct{}
 
-// LogAccess access_log
-func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
+// LogAccess access log.
+func (reqWare *RequestWare) LogAccess(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
 
@@ -51,7 +50,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 		// 请求结束后，记录日志
 		// log.Println("request after")
 		logger.Info(ctx, "exec end", map[string]interface{}{
-			"module":    config.AppConf.AppName,
+			"App":       "hg-mux",
 			"exec_time": time.Now().Sub(t).Seconds(),
 		})
 	})
@@ -59,7 +58,7 @@ func (this *RequestWare) LogAccess(h http.Handler) http.Handler {
 
 // Recover当请求发生了异常或致命错误，需要捕捉r,w执行上下文的错误
 // 该Recover设计灵感来源于golang gin框架的WriteHeaderNow()设计
-func (this *RequestWare) Recover(h http.Handler) http.Handler {
+func (reqWare *RequestWare) Recover(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -88,5 +87,5 @@ func (this *RequestWare) Recover(h http.Handler) http.Handler {
 
 // NotFoundHandler 404处理函数
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	utils.HttpCode(w, http.StatusNotFound, "this page not found")
+	utils.HttpCode(w, http.StatusNotFound, "404 - page not found")
 }

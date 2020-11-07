@@ -3,8 +3,9 @@ package controller
 import (
 	"context"
 	"log"
-	"mux-chi/app/extensions/logger"
 	"net/http"
+
+	"mux-chi/app/extensions/logger"
 
 	"mux-chi/app/config"
 	"mux-chi/app/utils"
@@ -14,15 +15,18 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// IndexController index ctrl.
 type IndexController struct{}
 
-func (this *IndexController) Home(w http.ResponseWriter, r *http.Request) {
+// Home home.
+func (ctrl *IndexController) Home(w http.ResponseWriter, r *http.Request) {
 	logger.Info(r.Context(), "fefefe", nil)
 
 	w.Write([]byte("hello hg-mux"))
 }
 
-func (this *IndexController) Test(w http.ResponseWriter, r *http.Request) {
+// Test test.
+func (ctrl *IndexController) Test(w http.ResponseWriter, r *http.Request) {
 	// log.Println("log_id: ", r.Context().Value("log_id"))
 	conn, err := config.GetRedisObj("default")
 	log.Println("err: ", err)
@@ -38,21 +42,21 @@ func (this *IndexController) Test(w http.ResponseWriter, r *http.Request) {
 	utils.ApiSuccess(w, "ok: "+v, nil)
 }
 
-//from a route like /info/{userID}
-func (this *IndexController) Info(w http.ResponseWriter, r *http.Request) {
+// Info from a route like /info/{userID}
+func (ctrl *IndexController) Info(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	log.Println("uid: ", userID)
 
 	utils.ApiSuccess(w, "hello world", nil)
 }
 
-//模拟发生panic操作
-func (this *IndexController) MockPanic(w http.ResponseWriter, r *http.Request) {
+// MockPanic 模拟发生panic操作
+func (ctrl *IndexController) MockPanic(w http.ResponseWriter, r *http.Request) {
 	panic(111)
 }
 
-//category
-func (this *IndexController) Category(w http.ResponseWriter, r *http.Request) {
+// Category category
+func (ctrl *IndexController) Category(w http.ResponseWriter, r *http.Request) {
 	category := chi.URLParam(r, "category")
 	id := chi.URLParam(r, "id")
 
@@ -66,18 +70,19 @@ func (this *IndexController) Category(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-//设置http context value 中间件
-func (this *IndexController) ArticleIdCtx(next http.Handler) http.Handler {
+// ArticleIdCtx 设置http context value 中间件
+func (ctrl *IndexController) ArticleIdCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		articleID := chi.URLParam(r, "articleID")
 
-		//设置上下文article_id
+		// 设置上下文article_id
 		ctx := context.WithValue(r.Context(), "article_id", articleID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func (this *IndexController) GetArticleId(w http.ResponseWriter, r *http.Request) {
+// GetArticleId get art id.
+func (ctrl *IndexController) GetArticleId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	articleId, ok := ctx.Value("article_id").(string)
 	if !ok {
@@ -90,7 +95,8 @@ func (this *IndexController) GetArticleId(w http.ResponseWriter, r *http.Request
 	})
 }
 
-func (this *IndexController) UpdateArticleId(w http.ResponseWriter, r *http.Request) {
+// UpdateArticleId update art id.
+func (ctrl *IndexController) UpdateArticleId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	articleId, ok := ctx.Value("article_id").(string)
 	if !ok {
@@ -104,7 +110,8 @@ func (this *IndexController) UpdateArticleId(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-func (this *IndexController) DeleteArticleId(w http.ResponseWriter, r *http.Request) {
+// DeleteArticleId delete.
+func (ctrl *IndexController) DeleteArticleId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	articleId, ok := ctx.Value("article_id").(string)
 	if !ok {

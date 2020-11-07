@@ -28,20 +28,22 @@ import (
 	chiWare "github.com/go-chi/chi/middleware"
 )
 
-var port int
-var log_dir string
-var config_dir string
-var wait time.Duration // 平滑重启的等待时间1s or 1m
+var (
+	port      int
+	logDir    string
+	configDir string
+	wait      time.Duration // 平滑重启的等待时间1s or 1m
+)
 
 func init() {
 	flag.IntVar(&port, "port", 1338, "app listen port")
-	flag.StringVar(&log_dir, "log_dir", "./logs", "log dir")
-	flag.StringVar(&config_dir, "config_dir", "./", "config dir")
+	flag.StringVar(&logDir, "log_dir", "./logs", "log dir")
+	flag.StringVar(&configDir, "config_dir", "./", "config dir")
 	flag.DurationVar(&wait, "graceful-timeout", 3*time.Second, "the server gracefully reload. eg: 15s or 1m")
 	flag.Parse()
 
 	// 日志文件设置
-	logger.SetLogDir(log_dir)
+	logger.SetLogDir(logDir)
 	logger.SetLogFile("mux-chi.log")
 	// logger.MaxSize(500)
 
@@ -101,7 +103,7 @@ func main() {
 	router.Use(monitor.MonitorHandler)
 
 	// 加载路由
-	routes.RouterHandler(router)
+	routes.RunRouter(router)
 
 	// 路由找不到404处理
 	router.NotFound(middleware.NotFoundHandler)
