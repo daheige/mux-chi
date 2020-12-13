@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"path/filepath"
-	"time"
 
 	"github.com/daheige/thinkgo/gredigo"
 	"github.com/daheige/thinkgo/yamlconf"
@@ -48,9 +47,7 @@ func InitAppConfig() {
 	}
 
 	if AppConf.GracefulWait == 0 {
-		AppConf.GracefulWait = 5 * time.Second
-	} else {
-		AppConf.GracefulWait *= time.Second
+		AppConf.GracefulWait = 5
 	}
 
 	log.Println("app: ", AppConf)

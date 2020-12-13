@@ -45,8 +45,8 @@ func init() {
 	logger.SetLogFile("mux-chi.log")
 	logger.MaxSize(200)
 
-	// 由于app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是1
-	logger.InitLogger(1)
+	// 由于app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3
+	logger.InitLogger(3)
 
 	// 注册监控指标
 	prometheus.MustRegister(monitor.WebRequestTotal)
@@ -155,7 +155,8 @@ func main() {
 	<-ch
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), config.AppConf.GracefulWait)
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(config.AppConf.GracefulWait)*time.Second)
 	defer cancel()
 
 	// Doesn't block if no connections, but will otherwise wait

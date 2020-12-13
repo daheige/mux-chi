@@ -1,9 +1,5 @@
 package config
 
-import (
-	"time"
-)
-
 // AppServerConf config.
 type AppServerConf struct {
 	AppEnv       string
@@ -12,7 +8,7 @@ type AppServerConf struct {
 	HttpPort     int
 	PProfPort    int
 	LogDir       string
-	GracefulWait time.Duration
+	GracefulWait int
 }
 
 // AppConf app config.
