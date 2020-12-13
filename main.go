@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"mux-chi/app/config"
+
 	"github.com/daheige/thinkgo/monitor"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -28,24 +30,20 @@ import (
 	chiWare "github.com/go-chi/chi/middleware"
 )
 
-var (
-	port      int
-	logDir    string
-	configDir string
-	wait      time.Duration // 平滑重启的等待时间1s or 1m
-)
+var configDir string
 
 func init() {
-	flag.IntVar(&port, "port", 1338, "app listen port")
-	flag.StringVar(&logDir, "log_dir", "./logs", "log dir")
 	flag.StringVar(&configDir, "config_dir", "./", "config dir")
-	flag.DurationVar(&wait, "graceful-timeout", 3*time.Second, "the server gracefully reload. eg: 15s or 1m")
 	flag.Parse()
 
+	// 初始化配置文件
+	config.InitConf(configDir)
+	config.InitRedis()
+
 	// 日志文件设置
-	logger.SetLogDir(logDir)
+	logger.SetLogDir(config.AppConf.LogDir)
 	logger.SetLogFile("mux-chi.log")
-	// logger.MaxSize(500)
+	logger.MaxSize(200)
 
 	// 由于app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3
 	logger.InitLogger(3)
@@ -56,12 +54,13 @@ func init() {
 	prometheus.MustRegister(monitor.CpuTemp)
 	prometheus.MustRegister(monitor.HdFailures)
 
+	log.Println("pprof port: ", config.AppConf.HttpPort)
 	// 性能报告监控和健康检测，性能监控的端口port+1000,只能在内网访问
 	go func() {
 		defer logger.Recover()
 
-		pprof_port := port + 1000
-		log.Println("server pprof run on: ", pprof_port)
+		pprofAddress := fmt.Sprintf("0.0.0.0:%d", config.AppConf.PProfPort)
+		log.Println("server pprof run on: ", pprofAddress)
 
 		httpMux := http.NewServeMux() // 创建一个http ServeMux实例
 		httpMux.HandleFunc("/debug/pprof/", pprof.Index)
@@ -74,7 +73,7 @@ func init() {
 		// metrics监控
 		httpMux.Handle("/metrics", promhttp.Handler())
 
-		if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", pprof_port), httpMux); err != nil {
+		if err := http.ListenAndServe(pprofAddress, httpMux); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -103,32 +102,37 @@ func main() {
 	router.Use(monitor.MonitorHandler)
 
 	// 加载路由
-	routes.RunRouter(router)
+	routes.RouterHandler(router)
 
 	// 路由找不到404处理
 	router.NotFound(middleware.NotFoundHandler)
 
 	// 路由walk,打印所有的路由信息，开发环境可以打开，生产环境可以注释掉
-	walkFunc := func(method string, route string, handler http.Handler,
-		middleware ...func(http.Handler) http.Handler) error {
-		route = strings.Replace(route, "/*/", "/", -1)
-		fmt.Printf("%s %s\n", method, route)
-		return nil
-	}
+	if config.AppConf.AppDebug {
+		walkFunc := func(method string, route string, handler http.Handler,
+			middlewares ...func(http.Handler) http.Handler) error {
+			route = strings.Replace(route, "/*/", "/", -1)
+			fmt.Printf("router: %s %s\n", method, route)
+			return nil
+		}
 
-	if err := chi.Walk(router, walkFunc); err != nil {
-		fmt.Printf("Logging err: %s\n", err.Error())
+		if err := chi.Walk(router, walkFunc); err != nil {
+			fmt.Printf("Logging err: %s\n", err.Error())
+		}
 	}
 
 	server := &http.Server{
-		Handler:      router,
-		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Handler: router,
+		Addr:    fmt.Sprintf("0.0.0.0:%d", config.AppConf.HttpPort),
+		// Good practice to set timeouts to avoid Slowloris attacks.
+		ReadTimeout:    15 * time.Second,
+		WriteTimeout:   15 * time.Second,
+		IdleTimeout:    60 * time.Second,
+		MaxHeaderBytes: 2 << 20, // header max 2MB
 	}
 
 	// 在独立携程中运行
-	log.Println("server run on: ", port)
+	log.Println("server run on: ", config.AppConf.HttpPort)
 	go func() {
 		defer logger.Recover()
 
@@ -151,7 +155,8 @@ func main() {
 	<-ch
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(config.AppConf.GracefulWait)*time.Second)
 	defer cancel()
 
 	// Doesn't block if no connections, but will otherwise wait
@@ -163,9 +168,10 @@ func main() {
 	<-ctx.Done()
 
 	log.Println("shutting down")
+	os.Exit(0)
 }
 
-// HealthCheckHandler 健康检测
+// 健康检测
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	// A very simple health check.
 	w.WriteHeader(http.StatusOK)

@@ -5,7 +5,7 @@ AppServer:
   AppName: mux-chi
   HttpPort: 1338
   PProfPort: 2338
-  GracefulWait: 5
+  GracefulWait: 6
   LogDir: ./logs # log dir
 
 #redis配置

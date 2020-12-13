@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// RunRouter router list.
-func RunRouter(router *chi.Mux) {
+// RouterHandler router list.
+func RouterHandler(router *chi.Mux) {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hello"))
 	})
