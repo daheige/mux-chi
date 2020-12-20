@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"mux-chi/app/extensions/logger"
+	"github.com/daheige/mux-chi/app/extensions/logger"
 
-	"mux-chi/app/utils"
+	"github.com/daheige/mux-chi/app/utils"
 
 	"github.com/daheige/thinkgo/grecover"
 	"github.com/daheige/thinkgo/gutils"

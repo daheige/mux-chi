@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"mux-chi/app/controller"
+	"github.com/daheige/mux-chi/app/controller"
 
 	"github.com/daheige/thinkgo/monitor"
 	"github.com/go-chi/chi"

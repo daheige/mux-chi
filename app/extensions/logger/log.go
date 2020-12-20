@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"mux-chi/app/utils"
+	"github.com/daheige/mux-chi/app/utils"
 
 	"github.com/daheige/thinkgo/gutils"
 	"github.com/daheige/thinkgo/logger"

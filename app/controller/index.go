@@ -5,10 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"mux-chi/app/extensions/logger"
+	"github.com/daheige/mux-chi/app/extensions/logger"
 
-	"mux-chi/app/config"
-	"mux-chi/app/utils"
+	"github.com/daheige/mux-chi/app/config"
+	"github.com/daheige/mux-chi/app/utils"
 
 	"github.com/go-chi/chi"
 

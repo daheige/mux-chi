@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"mux-chi/app/config"
+	"github.com/daheige/mux-chi/app/config"
 
 	"github.com/daheige/thinkgo/monitor"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"mux-chi/app/routes"
+	"github.com/daheige/mux-chi/app/routes"
 
-	"mux-chi/app/middleware"
+	"github.com/daheige/mux-chi/app/middleware"
 
 	"github.com/daheige/thinkgo/logger"
 	"github.com/prometheus/client_golang/prometheus"
@@ -42,7 +42,7 @@ func init() {
 
 	// 日志文件设置
 	logger.SetLogDir(config.AppConf.LogDir)
-	logger.SetLogFile("mux-chi.log")
+	logger.SetLogFile("go-web.log")
 	logger.MaxSize(200)
 
 	// 由于app/extensions/logger基于thinkgo/logger又包装了一层，所以这里是3

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"mux-chi/app/utils"
+	"github.com/daheige/mux-chi/app/utils"
 )
 
 // HomeController home ctrl.
