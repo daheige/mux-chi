@@ -7,5 +7,5 @@ require (
 	github.com/go-chi/chi v1.5.1
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/gomodule/redigo v1.8.3
-	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/client_golang v1.11.1
 )
